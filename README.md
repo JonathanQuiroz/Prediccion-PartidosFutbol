@@ -5,7 +5,7 @@ Proyecto de aula de [`HERRAMIENTAS COMPUTACIONALES`](https://github.com/cosmosca
 
 ## Objetivo:
 
-- Predecir los resultados de los partidos de futbol a nivel mundial basados en datos desde 1998 hasta 2016 (año actual), dando asi uso a las herramientas vistas en el curso.
+- Predecir los resultados de los partidos de futbol entre selecciones basados en datos de la [`FIFA`](http://es.fifa.com/index.html), dando asi uso a las herramientas vistas en el curso.
 
 ## Instalación:
 
