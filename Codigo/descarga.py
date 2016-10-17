@@ -24,7 +24,3 @@ if statusCode == 200:
 else:
     print "Error al cargar la pagina"
     
-
-
-print teams[9]
-    
