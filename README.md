@@ -5,13 +5,15 @@ Proyecto de aula de [`HERRAMIENTAS COMPUTACIONALES`](https://github.com/cosmosca
 
 ## Objetivo:
 
-- Predecir los resultados de los partidos de futbol entre selecciones basados en datos de la [`FIFA`](http://es.fifa.com/index.html), dando asi uso a las herramientas vistas en el curso.
+- Predecir los resultados de los partidos de futbol entre selecciones basados en datos de la [`FIFA`](http://es.fifa.com/index.html) y de [`FootballDatabase`](http://www.footballdatabase.eu/), dando asi uso a las herramientas vistas en el curso.
 
 ## Instalación:
 
 1. Instalar las siguientes librerias de python:
     - Requests: `pip install Requests`
     - Beautifulsoup4: `pip install beautifulsoup4`
+    - PhantomJS, para descarga e instalacion dirigirse al siguiente enlace -> [`PhantomJS`](http://phantomjs.org/download.html)
+
     
     
 

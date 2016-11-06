@@ -1,206 +1,155 @@
-
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
+# Librerias
 import bs4
 import requests
+import re
 from selenium import webdriver
-import time
-
-url = "http://es.fifa.com/fifa-tournaments/teams/search.html"
-req = requests.get(url)
-teams = []
-statusCode = req.status_code
-if statusCode == 200:
-    html = bs4.BeautifulSoup(req.text, "lxml") 
-    entradas = html.find_all('span',{'class':'team-name'})
-    for i,entrada in enumerate(entradas):
-        entrada.encode("utf-8")
-        t = entrada.getText()
-        teams += [t]
-	teams[i] = format(teams[i].encode("latin"))
-else:
-    print "Error al cargar la pagina"
-    
-print teams
 
 
+# ---------------- Datos FIFA ---------------------------------
+# Obtenemos pagina web
 
-# Funcion para llegar hasta los datos de el equipo necesario
+linkFifa = 'http://es.fifa.com/fifa-tournaments/teams/search.html?filter=&btsearch='
+pagFifa = requests.get(linkFifa)
+contFifa = bs4.BeautifulSoup(pagFifa.text, "lxml")
 
-def descarga(teams):
-	abcmay = ['A', 'B','C','D','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
-	abcmin = ['a', 'b', 'c', 'd', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
-	nums = ['1','2','3','4','5','6','7','8','9','0']
-	doc = open("datos.md","w")
-	doc.write("| FECHA | TORNEO | LOCAL | GL | GL | VISITANTE | \n")
-	doc.write("|:---:|:---:|:---:|:---:|:---:|:---:|\n")
+# Obtenemos nombre de los equipos
 
+contStr = format(contFifa.encode('latin'))
+equipos = re.findall('<img alt="([^"\'>]*)', contStr)
+equipos = equipos[2:]
 
+# -------------------------------------------------------------
 
-	#browser = webdriver.PhantomJS()
-	browser = webdriver.Chrome('/home/khovateky/Documentos/chromedriver')
-	browser.get('http://www.footballdatabase.eu/')
-	time.sleep(2)
-	txtusername = browser.find_element_by_name("login")
-	txtpassword = browser.find_element_by_name("password")
-	txtusername.send_keys("PruebaHC")
-	txtpassword.send_keys("herramientasc")
-	btnsigin = browser.find_element_by_id("connectu")
-	btnsigin.click()
-
-	# Buscamos equipo necesario
-
-	txtsearch = browser.find_element_by_name("seek")
-	txtsearch.send_keys(teams.decode('utf-8'))
-	btnsearch = browser.find_element_by_id("oku")
-	btnsearch.click()
-
-	# Accedemos a pagina del equipo
-
-	team = browser.find_element_by_link_text(teams.decode('utf-8'))
+# -------------- Datos FootballDatabase -----------------------
 
 
+# Funcion descarga
 
-	team.click()
+def descarga(equipo):
 
-	# Accedemos a los resultados 
+	# Variables
+	numeros = ['1','2','3','4','5','6','7','8','9','0']
+	abcMay = ['A', 'B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
+	abcMin = ['a', 'b', 'c', 'd', 'e','f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
+	listaAnos = []
+	listaTemp = []
+	l = 22
 
-	result = browser.find_element_by_id("liencalen")
-	result.click()
+	# Ingresamos e iniciamos sesion en FootballDatabase
+	linkFootDb = 'http://www.footballdatabase.eu/'
+	#buscador = webdriver.Chrome('/home/khovateky/Documentos/chromedriver')
+	buscador = webdriver.PhantomJS()
+	buscador.get(linkFootDb)
+	usuario =  buscador.find_element_by_name("login")
+	usuario.send_keys("PruebaHC")
+	clave = buscador.find_element_by_name("password")
+	clave.send_keys("herramientasc")
+	ingresar = buscador.find_element_by_id("connectu")
+	ingresar.click()
 
-	# Tomo la lista de anos de los que hay datos del equipo
-	codpage = browser.page_source
-	time.sleep(2)
-	listage = []
+	# Ingresamos a equipo especifico
+	buscaInterno = buscador.find_element_by_name("seek")
+	buscaInterno.send_keys(equipo)
+	buscaEquipo = buscador.find_element_by_id("oku")
+	buscaEquipo.click()
+	aEquipo = buscador.find_element_by_link_text(equipo)
+	aEquipo.click()
+	aResultados = buscador.find_element_by_id("liencalen")
+	aResultados.click()
 
-	html = bs4.BeautifulSoup(codpage, "lxml") 
-	entradas = html.find_all('select',{'class':'champclassique'})
+	# Obtenemos lista de temporadas
+	htmlEquipo = buscador.page_source
+	htmlEqBS4 = bs4.BeautifulSoup(htmlEquipo, "lxml")
+	htmlLista = htmlEqBS4.find_all('select',{'class':'champclassique'})
 
-	time.sleep(2)
-	for i,entrada in enumerate(entradas):
-		entrada.encode("utf-8")
-		t = entrada.getText()
-		listage += [t]
-	time.sleep(4)
-	listmod =  listage[0][22:]
+	for i, ages in enumerate(htmlLista):
+		listaAnos += [ages.getText()]
+	
+	while l < len(listaAnos[0]):
+		listaTemp += [listaAnos[0][l:l+4]]
+		l += 5
 
 	
+	# Obtenemos datos de cada temporada
+	for i in range(len(listaTemp)):
 
-	i = 0
-	listafinal = []
+		# Obtenemos link de pagina web
+		datosEquipo = []
+		linkEquipo = buscador.current_url
+		linkEquipo = linkEquipo[0:-4]
+		linkEquipo = str(linkEquipo) + str(listaTemp[i])
 
-	while i < len(listmod):
-		listafinal += [listmod[i:i+4]]
-		i += 5
+		# Obtenenmos html de la web
+		buscador.get(linkEquipo)
+		htmlTempEq = buscador.page_source
+		htmlTempEqBS4 = bs4.BeautifulSoup(htmlTempEq, "lxml") 
+		tablaResult = htmlTempEqBS4.find_all('tr',{'class':'stylemneutre'}) 
+
+		# Obtenemos datos del equipo
+		for j,registro in enumerate(tablaResult):
+			if "penalties" not in registro.getText() and "Despu" not in registro.getText() and "Previa" not in registro.getText():
+				datosEquipo += [registro.getText()] 
+
+		# Reseteamos contador
+		d = 0
+
+		for d in range(len(datosEquipo)):	
+
+			# Obtenemos fecha partido y la separamos del resto de datos
+			fecha = datosEquipo[d][:13]
+			restoDatos = datosEquipo[d][13:]
+			
+			# Obtenemos competencia
+			for c in range(1,len(restoDatos)):
+				if restoDatos[c] in abcMay and restoDatos[c-1] in abcMin:
+					competencia = restoDatos[:c]
+					restoDatos = restoDatos[c:]
+					break
+
+			# Descartamos jornada de los datos
+			for m in range(1,len(restoDatos)):
+				if restoDatos[m] in abcMay and (restoDatos[m-1] in abcMin or restoDatos[m-1] in abcMay or restoDatos[m-1] in numeros):
+					restoDatos = restoDatos[m:]
+					break
+
+			# Obtenemos los resultados del equipo local y su resultado
+			for rl in range(1,len(restoDatos)):
+				if restoDatos[rl] in numeros and restoDatos[rl-1] != "-" and restoDatos[rl-2] != "-":
+					resultadoLC = restoDatos[rl]
+					equipoLC = restoDatos[:rl]
+					restoDatos = restoDatos[rl:]
+					break
+
+			# Obtenemos los resultados del equipo visitante y su resultado
+			for rv in range(2,len(restoDatos)):
+				if restoDatos[rv] in numeros and restoDatos[rv-1] != "-" and restoDatos[rv-2] != "-":
+					resultadoVS = restoDatos[rv]
+					equipoVS = restoDatos[rv+1:]
+					break
+
+			# Variable de formato
+			encoding = "utf-8"	
+
+			# Ingresamos datos al archivo que contendra la base de datos
+			doc.write("|"+format(fecha.encode(encoding))+"|"+format(competencia.encode(encoding))+"|"+format(equipoLC.encode(encoding))+"|"+format(resultadoLC.encode(encoding))+"|"+format(resultadoVS.encode(encoding))+"|"+format(equipoVS.encode(encoding))+"| \n")
 
 	
-	# Obtenemos datos de equipo segun el ano
-	for i in range(2,len(listafinal)-1):
-		urlteam = browser.current_url
-		urlteam = urlteam[0:-4]
-		urlteam = str(urlteam) + str(listafinal[i])
-		browser.get(urlteam)
-		obtpage = browser.page_source
-        pageteam = bs4.BeautifulSoup(obtpage, "lxml") 
-        tablaresult = pageteam.find_all('tr',{'class':'stylemneutre'})        
-        datos = []
-        for j,entrada in enumerate(tablaresult):
-			if "penalties" not in entrada.getText():
-				datos += [entrada.getText()]
-            
-        
-        
-        for k in range(len(datos)):
-            # Fecha del partido
-			fecha = datos[k][:12]
-
-			# Obtengo posicion del equipo local
-			posteam = datos[k].find(teams)
-
-
-			# Obtengo el grupo y torneo
-			gruptor = datos[k][12:posteam]
-
-			# -------------------------------------------------------------------------------
-			# --------------------------------------- Datos cuando es local -----------------
-
 			
-			
-			try:
-				# Obtengo resultados equipos
-				teamsresult =  datos[k][posteam:].split(" ")
 
-				# Obtengo nombre equipo local
-				teamloc = teamsresult[0]
-
-				# Obtengo posicion de competicion
-				for l in range(1,len(gruptor)):
-					if gruptor[l] in abcmay and gruptor[l-1] in abcmin:
-						posfincom = l
-						break
-
-				# Obtengo competicion
-				comp = gruptor[1:posfincom]
+   
+	# -------------------------------------------------------------
 
 
-				# Obtengo resultados y visitante
-				prueba = teamsresult[1].split("\n")
 
-				# Resultados equipo local
-				resultlocal = prueba[0]
+# Abrimos archivo y escribimos encabezado
+doc = open("datos.md","w")
+doc.write("| FECHA | TORNEO | LOCAL | GL | GV | VISITANTE | \n")
+doc.write("|:---:|:---:|:---:|:---:|:---:|:---:| \n")
 
-				# Obtengo visitante y competicion
-				for n in range(len(prueba[1])):
-					if prueba[1][n] in abcmay:
-						posvis = n
-						break
+# Recorremos lista de equipos y hacemos el proceso de extraccion de datos
+for t in range(len(equipos)):
+	descarga(equipos[t].decode('utf-8'))
+	print t
 
-				# Obtengo equipo visitante
-				teamvis = prueba[1][posvis:]
-
-				# Obtengo resultado equipo visitante
-				resultvis = prueba[1][:posvis]
-
-			except IndexError:
-			# -------------------------------------------------------------------------------
-			# --------------------------------------- Datos cuando es visitante -------------
-				# Obtengo nombre visitante
-				teamvis = datos[k][posteam:]
-				
-
-				# Busco posicion de la competencia
-				for m in range(1,len(gruptor)):
-					if gruptor[m] in abcmay and gruptor[m-1] in abcmin:
-						break
-
-
-				comp = gruptor[1:m]
-				gruptor = gruptor[m:]
-
-				# Busco posicion del equipo local
-				for o in range(1,len(gruptor)):
-					if gruptor[o] in abcmay and (gruptor[o-1] in abcmay or gruptor[o-1] in abcmin or gruptor[o-1] in nums):
-						break
-
-				# Ajustes para hallar los resultados
-				prueba = gruptor[o:].split(" ")
-				teamloc = prueba[0]
-				resultados = prueba[1].split("\n")
-				resultlocal = resultados[0]
-				resultvis = resultados[1]
-			encoding = "utf-8"
-				
-			doc.write("|"+format(fecha.encode(encoding))+"|"+format(comp.encode(encoding))+"|"+format(teamloc.encode(encoding))+"|"+format(resultlocal.encode(encoding))+"|"+format(resultvis.encode(encoding))+"|"+format(teamvis.encode(encoding))+"|\n")
-			
-		
-	doc.close()
-                                           
-                                           
-						 
-						
-    
-    
-descarga("Albania")
-
-
+# Cerramos documento al finalizar la extraccion de datos
+doc.close()
