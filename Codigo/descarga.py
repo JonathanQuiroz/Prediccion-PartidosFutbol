@@ -3,6 +3,7 @@ import bs4
 import requests
 import re
 from selenium import webdriver
+import time
 
 
 # ---------------- Datos FIFA ---------------------------------
@@ -23,29 +24,36 @@ equipos = equipos[2:]
 # -------------- Datos FootballDatabase -----------------------
 
 
-# Funcion descarga
+# Abrimos archivo y escribimos encabezado
+doc = open("datos.md","w")
+doc.write("| FECHA | TORNEO | LOCAL | GL | GV | VISITANTE | \n")
+doc.write("|:---:|:---:|:---:|:---:|:---:|:---:| \n")
 
-def descarga(equipo):
+# Variables
+numeros = ['1','2','3','4','5','6','7','8','9','0']
+abcMay = ['A', 'B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
+abcMin = ['a', 'b', 'c', 'd', 'e','f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
+listaAnos = []
+listaTemp = []
+l = 22
 
-	# Variables
-	numeros = ['1','2','3','4','5','6','7','8','9','0']
-	abcMay = ['A', 'B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
-	abcMin = ['a', 'b', 'c', 'd', 'e','f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
-	listaAnos = []
+# Ingresamos e iniciamos sesion en FootballDatabase
+linkFootDb = 'http://www.footballdatabase.eu/'
+buscador = webdriver.Chrome('/home/khovateky/Documentos/chromedriver')
+#buscador = webdriver.PhantomJS()
+buscador.get(linkFootDb)
+usuario =  buscador.find_element_by_name("login")
+usuario.send_keys("PruebaHC")
+clave = buscador.find_element_by_name("password")
+clave.send_keys("herramientasc")
+ingresar = buscador.find_element_by_id("connectu")
+ingresar.click()
+
+for e in range(len(equipos)):
+
+	equipo = equipos[e].decode('utf-8')
 	listaTemp = []
-	l = 22
-
-	# Ingresamos e iniciamos sesion en FootballDatabase
-	linkFootDb = 'http://www.footballdatabase.eu/'
-	buscador = webdriver.Chrome('/home/khovateky/Documentos/chromedriver')
-	#buscador = webdriver.PhantomJS()
-	buscador.get(linkFootDb)
-	usuario =  buscador.find_element_by_name("login")
-	usuario.send_keys("PruebaHC")
-	clave = buscador.find_element_by_name("password")
-	clave.send_keys("herramientasc")
-	ingresar = buscador.find_element_by_id("connectu")
-	ingresar.click()
+	listaAnos = []
 
 	# Ingresamos a equipo especifico
 	buscaInterno = buscador.find_element_by_name("seek")
@@ -54,6 +62,7 @@ def descarga(equipo):
 	buscaEquipo.click()
 	aEquipo = buscador.find_element_by_link_text(equipo)
 	aEquipo.click()
+	time.sleep(2)
 	aResultados = buscador.find_element_by_id("liencalen")
 	aResultados.click()
 
@@ -61,15 +70,15 @@ def descarga(equipo):
 	htmlEquipo = buscador.page_source
 	htmlEqBS4 = bs4.BeautifulSoup(htmlEquipo, "lxml")
 	htmlLista = htmlEqBS4.find_all('select',{'class':'champclassique'})
-
+	time.sleep(2)
 	for i, ages in enumerate(htmlLista):
 		listaAnos += [ages.getText()]
-	
+	time.sleep(2)
 	while l < len(listaAnos[0]):
 		listaTemp += [listaAnos[0][l:l+4]]
 		l += 5
 
-	
+
 	# Obtenemos datos de cada temporada
 	for i in range(len(listaTemp)):
 
@@ -78,7 +87,7 @@ def descarga(equipo):
 		linkEquipo = buscador.current_url
 		linkEquipo = linkEquipo[0:-4]
 		linkEquipo = str(linkEquipo) + str(listaTemp[i])
-
+		time.sleep(2)
 		# Obtenenmos html de la web
 		buscador.get(linkEquipo)
 		htmlTempEq = buscador.page_source
@@ -101,7 +110,7 @@ def descarga(equipo):
 			
 			# Obtenemos competencia
 			for c in range(1,len(restoDatos)):
-				if restoDatos[c] in abcMay and restoDatos[c-1] in abcMin:
+				if (restoDatos[c] in abcMay or restoDatos[c] in numeros) and restoDatos[c-1] in abcMin:
 					competencia = restoDatos[:c]
 					restoDatos = restoDatos[c:]
 					break
@@ -133,23 +142,6 @@ def descarga(equipo):
 			# Ingresamos datos al archivo que contendra la base de datos
 			doc.write("|"+format(fecha.encode(encoding))+"|"+format(competencia.encode(encoding))+"|"+format(equipoLC.encode(encoding))+"|"+format(resultadoLC.encode(encoding))+"|"+format(resultadoVS.encode(encoding))+"|"+format(equipoVS.encode(encoding))+"| \n")
 
-	
-			
-
-   
-	# -------------------------------------------------------------
-
-
-
-# Abrimos archivo y escribimos encabezado
-doc = open("datos.md","w")
-doc.write("| FECHA | TORNEO | LOCAL | GL | GV | VISITANTE | \n")
-doc.write("|:---:|:---:|:---:|:---:|:---:|:---:| \n")
-
-# Recorremos lista de equipos y hacemos el proceso de extraccion de datos
-for t in range(len(equipos)):
-	descarga(equipos[t].decode('utf-8'))
-	print t
 
 # Cerramos documento al finalizar la extraccion de datos
 doc.close()
