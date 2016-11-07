@@ -23,7 +23,7 @@ Proyecto de aula de [`HERRAMIENTAS COMPUTACIONALES`](https://github.com/cosmosca
 
 ## Modo de Uso:
 
-- Para conocer el uso del proyecto dirijase al siguiente enlace -> [`Leer Más...`]()
+- Para conocer el uso del proyecto dirijase al siguiente enlace -> [`Leer Más...`](https://github.com/JonathanQuiroz/Prediccion-PartidosFutbol/blob/master/Codigo/Documentacion.ipynb)
 
 ## Integrantes:
 
