@@ -37,8 +37,8 @@ def descarga(equipo):
 
 	# Ingresamos e iniciamos sesion en FootballDatabase
 	linkFootDb = 'http://www.footballdatabase.eu/'
-	#buscador = webdriver.Chrome('/home/khovateky/Documentos/chromedriver')
-	buscador = webdriver.PhantomJS()
+	buscador = webdriver.Chrome('/home/khovateky/Documentos/chromedriver')
+	#buscador = webdriver.PhantomJS()
 	buscador.get(linkFootDb)
 	usuario =  buscador.find_element_by_name("login")
 	usuario.send_keys("PruebaHC")
