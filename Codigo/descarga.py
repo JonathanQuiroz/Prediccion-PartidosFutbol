@@ -24,15 +24,17 @@ equipos = equipos[2:]
 # Comprobamos si ahi registro de algun equipo
 
 reg = np.loadtxt('reg.text', dtype = int, delimiter = ' ')
-doc = open("datos.md","w")
+
 
 if reg[0] == 0 and reg[1] == 0 and reg[2] == 0:
+	doc = open("datos.md","w")
 	doc.write("| FECHA | TORNEO | LOCAL | GL | GV | VISITANTE | \n")
 	doc.write("|:---:|:---:|:---:|:---:|:---:|:---:| \n")
 	i_e = 0
 	i_i = 0
 	i_d = 0
 else:
+	doc = open("datos.md","a")
 	i_e = reg[0]
 	i_i = reg[1]
 	i_d = reg[2]
@@ -79,7 +81,7 @@ for e in range(i_e,len(equipos)):
 	time.sleep(2)
 	aResultados = buscador.find_element_by_id("liencalen")
 	aResultados.click()
-
+	time.sleep(2)
 	# Obtenemos lista de temporadas
 	htmlEquipo = buscador.page_source
 	htmlEqBS4 = bs4.BeautifulSoup(htmlEquipo, "lxml")
