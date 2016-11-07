@@ -24,37 +24,11 @@ equipos = equipos[2:]
 # Comprobamos si ahi registro de algun equipo
 
 reg = np.loadtxt('reg.text', dtype = int, delimiter = ' ')
+doc = open("datos.md","w")
 
 if reg[0] == 0 and reg[1] == 0 and reg[2] == 0:
-
-	# -------------- Datos FootballDatabase -----------------------
-
-
-	# Abrimos archivo y escribimos encabezado
-	doc = open("datos.md","w")
 	doc.write("| FECHA | TORNEO | LOCAL | GL | GV | VISITANTE | \n")
 	doc.write("|:---:|:---:|:---:|:---:|:---:|:---:| \n")
-
-	# Variables
-	numeros = ['1','2','3','4','5','6','7','8','9','0']
-	abcMay = ['A', 'B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
-	abcMin = ['a', 'b', 'c', 'd', 'e','f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
-	listaAnos = []
-	listaTemp = []
-	l = 22
-
-	# Ingresamos e iniciamos sesion en FootballDatabase
-	linkFootDb = 'http://www.footballdatabase.eu/'
-	buscador = webdriver.Chrome('/home/khovateky/Documentos/chromedriver')
-	#buscador = webdriver.PhantomJS()
-	buscador.get(linkFootDb)
-	usuario =  buscador.find_element_by_name("login")
-	usuario.send_keys("PruebaHC")
-	clave = buscador.find_element_by_name("password")
-	clave.send_keys("herramientasc")
-	ingresar = buscador.find_element_by_id("connectu")
-	ingresar.click()
-
 	i_e = 0
 	i_i = 0
 	i_d = 0
@@ -62,6 +36,31 @@ else:
 	i_e = reg[0]
 	i_i = reg[1]
 	i_d = reg[2]
+	
+# -------------- Datos FootballDatabase -----------------------
+# Abrimos archivo y escribimos encabezado
+
+# Variables
+numeros = ['1','2','3','4','5','6','7','8','9','0']
+abcMay = ['A', 'B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
+abcMin = ['a', 'b', 'c', 'd', 'e','f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
+listaAnos = []
+listaTemp = []
+l = 22
+
+# Ingresamos e iniciamos sesion en FootballDatabase
+linkFootDb = 'http://www.footballdatabase.eu/'
+buscador = webdriver.Chrome('/home/khovateky/Documentos/chromedriver')
+#buscador = webdriver.PhantomJS()
+buscador.get(linkFootDb)
+usuario =  buscador.find_element_by_name("login")
+usuario.send_keys("PruebaHC")
+clave = buscador.find_element_by_name("password")
+clave.send_keys("herramientasc")
+ingresar = buscador.find_element_by_id("connectu")
+ingresar.click()
+
+
 
 
 for e in range(i_e,len(equipos)):
